@@ -11,15 +11,6 @@
     state: stopped
   when: service_exists.rc == 0
 
-- name: Create systemd service file
-  remote_user: root
-  template:
-    src: app.service.j2
-    dest: '/usr/lib/systemd/system/{{ app_name }}.service'
-    owner: "{{ app_user }}"
-    group: "{{ app_user }}"
-    mode: '0644'
-
 - name: delete old directory
   file:
     path: "{{ app_home }}/{{ app_name }}"
@@ -32,6 +23,15 @@
     src: "{{ base_path }}/{{ app_name }}-{{ app_version }}.zip"
     dest: "{{ app_home }}/"
 
+- name: Create systemd service file
+  remote_user: root
+  template:
+    src: app.service.j2
+    dest: '/usr/lib/systemd/system/{{ app_name }}.service'
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
 - name: Create runApp.sh
   template:
     src: runApp.sh.j2
@@ -39,6 +39,10 @@
     owner: "{{ app_user }}"
     group: "{{ app_user }}"
     mode: '0755'
+
+- name: run systemd to reread configs
+  systemd:
+    daemon_reload: yes
 
 - name: Restart and enable service
   remote_user: root
