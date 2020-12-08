@@ -23,7 +23,7 @@
     path: "{{ app_dir }}/{{ app_name }}"
     state: absent
 
-- name: Unarchive zip
+- name: Copy and unarchive zip
   become: yes
   become_user: "{{ user }}"
   unarchive:
