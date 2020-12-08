@@ -1,0 +1,54 @@
+- name: Check if service exists
+  shell: 'systemctl cat {{ app_name }}'
+  check_mode: no
+  register: service_exists
+  ignore_errors: yes
+  changed_when: False
+
+- name: Stop service
+  systemd:
+    name: '{{ app_name }}'
+    state: stopped
+  when: service_exists.rc == 0
+
+- name: Create systemd service file
+  remote_user: root
+  template:
+    src: app.service.j2
+    dest: '/usr/lib/systemd/system/{{ app_name }}.service'
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0644'
+
+- name: delete old directory
+  file:
+    path: "{{ app_home }}/{{ app_name }}"
+    state: absent
+
+- name: Copy and unarchive zip
+  become: yes
+  become_user: "{{ app_user }}"
+  unarchive:
+    src: "{{ base_path }}/{{ app_name }}-{{ app_version }}.zip"
+    dest: "{{ app_home }}/"
+
+- name: Create runApp.sh
+  template:
+    src: runApp.sh.j2
+    dest: '{{ app_home }}/{{ app_name }}/bin/runApp.sh'
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+
+- name: Restart and enable service
+  remote_user: root
+  service:
+    name: '{{ app_name }}'
+    state: restarted
+    enabled: yes
+
+- name: check service status
+  shell: "systemctl status {{ app_name }}"
+  register: service_status
+  changed_when: false
+  failed_when: service_status.rc > 0
