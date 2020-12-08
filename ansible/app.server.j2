@@ -1,0 +1,14 @@
+[Unit]
+Description=Manage Java service
+
+[Service]
+ExecStart=/bin/bash {{ app_dir }}/{{ app_name }}/bin/start.sh
+ExecStop=/bin/kill -- $MAINPID
+ExecReload=/bin/kill -s HUP $MAINPID
+User={{ app_user }}
+Type=simple
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
