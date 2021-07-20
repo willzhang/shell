@@ -1,0 +1,28 @@
+- name: run prepare
+  import_tasks: prepare.yaml
+  when: ('dev_hosts' in group_names) or ('prod_hosts' in group_names)
+
+- name: run clean
+  import_tasks: clean.yaml
+  when: ('dev_hosts' in group_names) or ('prod_hosts' in group_names)
+ 
+- name: run check_dev_host
+  import_tasks: check_host.yaml
+  when: inventory_hostname in groups['dev_hosts']
+
+- name: run check_prod_host
+  import_tasks: check_host.yaml
+  when: inventory_hostname in groups['prod_hosts']
+  
+- name: run clean
+  import_tasks: clean.yaml
+  when: ('dev_hosts' in group_names) or ('prod_hosts' in group_names)
+
+- name: run check_dev_db
+  import_tasks: check_dev_db.yaml
+  when: inventory_hostname in groups['dev_db']
+  
+- name: run check_prod_db
+  environment:
+  import_tasks: check_prod_db.yaml
+  when: inventory_hostname in groups['prod_db']

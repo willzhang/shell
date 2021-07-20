@@ -1,0 +1,11 @@
+- name: find files
+  find:
+    paths: "{{ clean_path }}"
+    patterns: "{{ clean_patterns }}"
+  register: find_result
+
+- name: clean files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ find_result.files }}"

@@ -1,0 +1,17 @@
+- name: run host
+  shell: "sh 46c221be-6ab2-ef53-1589-fe16877914f4.sh root"
+  args:
+    chdir: '{{ dest_dir }}/check/host/linux/'
+
+- name: find files
+  find:
+    paths: "/tmp/"
+    patterns: "*_chk.xml"
+  register: find_result
+  
+- name: Store file into /tmp/check_result/linux/host/
+  fetch:
+    src: "{{ item.path }}"
+    dest: '/tmp/check_result/linux/host/{{ inventory_hostname }}/'
+    flat: yes
+  with_items: "{{ find_result.files }}"

@@ -1,0 +1,10 @@
+base_dir: /data/ansible
+dest_dir: /tmp
+clean_path: /tmp
+clean_patterns: "*_chk.xml"
+dev_db_port: 3306
+dev_db_user: root
+dev_db_pass: 123456
+prod_db_port: 3306
+prod_db_user: root
+prod_db_pass: 123456

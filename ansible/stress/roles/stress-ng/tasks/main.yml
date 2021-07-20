@@ -1,0 +1,71 @@
+---
+- name: Register screen session
+  find:
+    paths: '/var/run/screen/S-root/'
+    file_type: any
+    patterns: '*.stress'
+  register: find_result
+
+- name: Fail if existing screen session
+  fail:
+    msg: A stress session is already running. It might be some pending writes to disk.
+  when: find_result.matched != 0
+
+- name: install screen
+  package:
+    name: screen
+    state: present
+
+- name: install stress-ng
+  package:
+    name: stress-ng
+    state: present
+
+- name: create a temp dir for stress to use
+  file:
+    path: "{{ stress_tmp_dir }}"
+    state: directory
+
+- name: run stress-ng
+  command: >
+    screen -S stress -d -m
+    stress-ng
+    --timeout {{ test_duration }}
+    --hdd-bytes {{ bytes_per_hdd_worker }}
+    --vm-bytes {{ bytes_per_vm_worker }}
+    --vm-method all
+    --cpu-method all
+    --cpu {{ cpu_workers }}
+    --vm {{ vm_workers }}
+    --hdd {{ hdd_workers }}
+    --vm-keep
+    --log-file {{ stress_tmp_dir }}/stress-ng-{{ ansible_date_time.iso8601_basic_short }}.log
+    ; sleep 2 > {{ stress_tmp_dir }}/screen.log 2>&1
+  args:
+    chdir: "{{ stress_tmp_dir }}"
+  tags: skip_ansible_lint
+
+- name: Get stress-ng process count
+  shell: ps -ef|grep "[s]tress-ng"|wc -l
+  register: stress_procs
+  changed_when: False
+  check_mode: False
+  tags: skip_ansible_lint
+
+- name: Fail if no stress-ng processes found
+  fail:
+    msg: No stress-ng processes found!
+  when: stress_procs.stdout|int < 1
+
+- name: Get dead screen count
+  shell: screen -ls|grep -c Dead
+  register: reg_dead_screens
+  changed_when: False
+  check_mode: False
+  failed_when: False
+  tags: skip_ansible_lint
+
+- name: Fail if there are dead screens
+  fail:
+    msg: Found dead screens. stress-ng probably did not start. Run screen -wipe and try again.
+  when: reg_dead_screens.stdout|int > 0

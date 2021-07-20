@@ -1,0 +1,33 @@
+---
+- name: Get dead screen count
+  shell: screen -ls | grep -c Dead
+  register: reg_dead_screens
+  changed_when: False
+  check_mode: False
+  failed_when: False
+
+- name: clean dead screen session
+  shell: 'screen -wipe stress && sleep 3s'
+  when: reg_dead_screens.stdout|int > 0
+
+- name: Register screen session
+  find:
+    paths: '/var/run/screen/S-root/'
+    file_type: 'any'
+    patterns: '*.stress'
+  register: find_result
+
+- name: clean all screen session
+  shell: 'screen -X -S stress quit && sleep 3s'
+  when: find_result.matched != 0
+
+- name: Get stress-ng process count
+  shell: ps -ef | grep "[s]tress-ng" | wc -l
+  register: stress_procs
+  changed_when: False
+  check_mode: False
+
+- name: Fail if stress-ng processes not clean
+  fail:
+    msg: Found screens processes. stress-ng probably did not clean. Run clean again.
+  when: stress_procs.stdout|int != 0

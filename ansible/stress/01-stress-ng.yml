@@ -1,0 +1,8 @@
+---
+ - name: run stress-ng
+   hosts: login
+   vars:
+       - test_duration: "3000h"
+       - skip_screen_check: True
+   roles:
+       - stress-ng

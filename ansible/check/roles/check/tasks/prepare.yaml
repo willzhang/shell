@@ -1,0 +1,8 @@
+- name: ping  
+  ansible.builtin.ping:
+
+- name: Copy files
+  copy:
+    src: "check"
+    dest: '{{ dest_dir }}'
+    mode: '0755'

@@ -1,0 +1,17 @@
+- name: run db
+  shell: "sh 46c221be-6ab2-ef53-1589-fe16877914a8.sh {{ prod_db_user }} {{ prod_db_port }} {{ prod_db_pass }}"
+  args:
+    chdir: '{{ dest_dir }}/check/db/mysql/'
+
+- name: find files
+  find:
+    paths: "/tmp/"
+    patterns: "*_chk.xml"
+  register: find_result
+  
+- name: Store file into /tmp/check_result/db/mysql/
+  fetch:
+    src: "{{ item.path }}"
+    dest: '/tmp/check_result/db/mysql/{{ inventory_hostname }}/'
+    flat: yes
+  with_items: "{{ find_result.files }}"

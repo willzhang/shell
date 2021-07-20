@@ -1,0 +1,20 @@
+---
+# Test duration in seconds (defaults to 86400 which is 24h)
+test_duration: "2160h"
+
+# How many workers of each type to run
+# The default of zero will give as many workers as there are CPUs in the system
+cpu_workers: "1"
+vm_workers: "1"
+hdd_workers: "1"
+
+# How many bytes to write per HDD and VM worker
+# To calculate the actual usage by the test, multiply hese by the number of
+# workers
+# Defaults to 256M for both
+bytes_per_hdd_worker: "256M"
+bytes_per_vm_worker: "256M"
+
+# Temporary/runtime directory for stress-ng
+stress_tmp_dir: /tmp/stress-tmp
+
